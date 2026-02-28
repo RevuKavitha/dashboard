@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Engineer Metrics Dashboard - Revu Kavitha</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <!-- Custom Global Styles -->
+  <style>
+    :root {
+      --bg-main: #0a192f;
+      --bg-card: #112240;
+      --border-card: #233554;
+      --text-primary: #ccd6f6;
+      --text-muted: #8892b0;
+      --accent-cyan: #64ffda;
+      --accent-blue: #219ebc;
+      --accent-red: #ff595e;
+      --accent-gold: #ffd700;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+        sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-main);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--bg-card);
+      border-radius: 9999px;
+      border: 2px solid var(--bg-main);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--border-card);
+    }
+
+    /* Firefox */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--bg-card) var(--bg-main);
+    }
+
+    /* Certification rosette badges */
+    .cert-shield {
+      position: relative;
+      width: 5rem;
+      height: 6.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .cert-shield--primary {
+      transform: scale(1.15);
+    }
+
+    .cert-badge {
+      position: relative;
+      width: 4.5rem;
+      height: 4.5rem;
+      background: linear-gradient(135deg, #112240 0%, #0a192f 100%);
+      border: 3px solid #233554;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 
+        0 0 0 2px #233554,
+        0 0 0 4px #112240,
+        0 0 20px rgba(100, 255, 218, 0.3),
+        inset 0 0 20px rgba(33, 158, 188, 0.1);
+      overflow: visible;
+      z-index: 2;
+    }
+
+    /* Scalloped / rosette perimeter */
+    .cert-badge::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 4.9rem;
+      height: 4.9rem;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: #112240;
+      box-shadow:
+        0 -1.6rem 0 0 #233554,
+        1.1rem -1.1rem 0 0 #233554,
+        1.6rem 0 0 0 #233554,
+        1.1rem 1.1rem 0 0 #233554,
+        0 1.6rem 0 0 #233554,
+        -1.1rem 1.1rem 0 0 #233554,
+        -1.6rem 0 0 0 #233554,
+        -1.1rem -1.1rem 0 0 #233554;
+      z-index: -1;
+    }
+
+    .cert-shield--primary .cert-badge {
+      box-shadow: 
+        0 0 0 2px #233554,
+        0 0 0 4px #112240,
+        0 0 30px rgba(100, 255, 218, 0.5),
+        inset 0 0 25px rgba(33, 158, 188, 0.15);
+    }
+
+    .cert-shield__middle {
+      position: relative;
+      z-index: 2;
+      color: #64ffda;
+      font-size: 0.6rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 0 0.3rem;
+      white-space: nowrap;
+      text-shadow: 0 0 8px rgba(100, 255, 218, 0.6);
+    }
+
+    .cert-shield__bottom {
+      position: absolute;
+      bottom: -1.4rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.2rem;
+      z-index: 1;
+      width: 3.4rem;
+      height: 2.8rem;
+    }
+
+    .cert-ribbon {
+      flex: 1;
+      height: 100%;
+      background: linear-gradient(135deg, #ffd700 0%, #ffb700 100%);
+      position: relative;
+      box-shadow: 0 2px 10px rgba(255, 215, 0, 0.6);
+      /* long ribbon tail with clear downward V at the bottom */
+      clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+    }
+
+    .cert-ribbon:first-child {
+      border-top-left-radius: 0.4rem;
+    }
+
+    .cert-ribbon:last-child {
+      border-top-right-radius: 0.4rem;
+    }
+
+    .cert-label {
+      position: absolute;
+      bottom: -3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-size: 0.5rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #8892b0;
+      letter-spacing: 0.1em;
+      text-align: center;
+      width: 100%;
+    }
+  </style>
+</head>
+<body class="font-inter">
+  <div class="min-h-screen bg-[#0A192F] text-[#CCD6F6]">
+    <div class="max-w-6xl mx-auto px-6 py-6 lg:py-10">
+      <div class="flex flex-col lg:flex-row gap-6 lg:gap-8 overflow-x-hidden">
+
+        <!-- LEFT SIDEBAR -->
+        <aside class="w-full lg:w-1/4 lg:sticky lg:top-6 self-start">
+          <div
+            class="relative bg-[#112240] border border-[#233554] rounded-2xl p-6 lg:p-7 shadow-lg overflow-hidden"
+          >
+            <!-- Glowing Gradient Accent -->
+            <div
+              class="pointer-events-none absolute -top-16 -left-16 h-40 w-40 bg-[#64FFDA]/30 rounded-full blur-3xl"
+            ></div>
+
+            <div class="relative flex flex-col items-center gap-5">
+              <!-- Profile Image -->
+              <div
+                class="h-28 w-28 rounded-full border-2 border-[#64FFDA] bg-[#0A192F] shadow-[0_0_30px_rgba(100,255,218,0.5)] overflow-hidden"
+              >
+                <!-- Replace 'avatar.png' with your actual image file name if different -->
+                <img
+                  src="avatar.png"
+                  alt="Revu Kavitha Avatar"
+                  class="h-full w-full object-cover"
+                />
+              </div>
+
+              <!-- Name & Role -->
+              <div class="text-center space-y-1">
+                <h1 class="text-xl sm:text-2xl font-extrabold tracking-[0.2em]">
+                  REVU KAVITHA
+                </h1>
+                <p
+                  class="text-xs sm:text-sm font-semibold uppercase tracking-[0.35em] text-[#64FFDA]"
+                >
+                  M.Tech - Data Science
+                </p>
+              </div>
+
+              <!-- Contact List -->
+              <div class="w-full mt-4 space-y-3 text-sm">
+                <div class="flex items-center gap-3 text-[#64FFDA]">
+                  <img
+                    src="gmail-icon.png"
+                    alt="Email"
+                    class="w-5 h-5 object-contain flex-shrink-0"
+                  />
+                  <a
+                    href="mailto:revukavitha@gmail.com"
+                    class="hover:underline break-all"
+                  >
+                    revukavitha@gmail.com
+                  </a>
+                </div>
+                <div class="flex items-center gap-3 text-[#FF595E]">
+                  <img
+                    src="location-icon.jpeg"
+                    alt="Location"
+                    class="w-5 h-5 object-contain flex-shrink-0"
+                  />
+                  <span>Puducherry,India</span>
+                </div>
+                <div class="flex items-center gap-3 text-white">
+                  <img
+                    src="github-icon.png"
+                    alt="GitHub"
+                    class="w-5 h-5 object-contain flex-shrink-0"
+                  />
+                  <a
+                    href="https://github.com/revukavitha"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="hover:underline break-all"
+                  >
+                    github.com/revukavitha
+                  </a>
+                </div>
+                <div class="flex items-center gap-3 text-[#219EBC]">
+                  <img
+                    src="phone-icon.png"
+                    alt="Phone"
+                    class="w-5 h-5 object-contain flex-shrink-0"
+                  />
+                  <span>+91 9000060000</span>
+                </div>
+              </div>
+
+              <!-- Spacer -->
+              <div class="h-2"></div>
+
+              <!-- Status Badge -->
+              <div class="w-full flex justify-center">
+                <span
+                  class="inline-flex items-center gap-2 border border-emerald-400 text-emerald-400/90 bg-emerald-500/10 px-4 py-1.5 rounded-full text-[0.7rem] font-semibold uppercase tracking-[0.2em] animate-pulse"
+                >
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,1)]"></span>
+                  Open to Work
+                </span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- RIGHT MAIN DASHBOARD -->
+        <main class="w-full lg:w-3/4 space-y-6 lg:space-y-8">
+          <!-- HEADER -->
+          <section
+            class="bg-gradient-to-br from-[#112240] to-[#0A192F] border border-[#233554] rounded-2xl px-6 py-5 lg:px-7 lg:py-6 shadow-lg"
+          >
+            <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center justify-between">
+              <div class="space-y-1">
+                <p
+                  class="text-xs font-semibold tracking-[0.35em] text-[#8892B0] uppercase"
+                >
+                  Resume Overview
+                </p>
+                <h2 class="text-xl sm:text-2xl font-extrabold tracking-[0.24em]">
+                  RESUME VISUALIZATION
+                </h2>
+                <p class="text-xs sm:text-sm text-[#8892B0] max-w-xl">
+                  Real-time overview of technical projects, skills &amp; education.
+                </p>
+              </div>
+
+              <!-- QR Code Block -->
+              <a
+                href="https://github.com/revukavitha"
+                target="_blank"
+                rel="noreferrer"
+                class="group flex flex-col items-center gap-2"
+              >
+                <div
+                  class="h-24 w-24 bg-white rounded-lg p-1 flex items-center justify-center shadow-[0_0_30px_rgba(100,255,218,0.2)] group-hover:scale-105 transition-transform"
+                >
+                  <img
+                    src="qr-code.png"
+                    alt="GitHub QR Code"
+                    class="h-full w-full object-contain"
+                  />
+                </div>
+                <p
+                  class="text-[0.65rem] font-semibold tracking-[0.3em] uppercase text-[#64FFDA] flex items-center gap-1"
+                >
+                  <span class="text-base leading-none">🤓</span>
+                  <span>Know Me More</span>
+                </p>
+              </a>
+            </div>
+          </section>
+
+          <!-- ROW 1: HACKATHONS & CERTIFICATIONS -->
+          <section class="grid md:grid-cols-2 gap-6">
+            <!-- Hackathons -->
+            <div
+              class="bg-[#112240] border border-[#233554] rounded-2xl p-6 lg:p-7 shadow-lg flex flex-col min-h-[280px]"
+            >
+              <p
+                class="text-[0.7rem] font-semibold tracking-[0.3em] text-[#8892B0] uppercase mb-4"
+              >
+                Hackathons
+              </p>
+              <div class="flex items-center justify-center gap-5 flex-1">
+                  <!-- Left Trophy -->
+                  <div
+                    class="flex flex-col items-center text-[0.7rem] text-[#FFD700]/80"
+                  >
+                    <svg
+                      class="h-10 w-10 drop-shadow-[0_0_14px_rgba(255,215,0,0.7)]"
+                      viewBox="0 0 64 64"
+                      fill="none"
+                    >
+                      <path
+                        d="M22 10h20v6a10 10 0 0 1-10 10 10 10 0 0 1-10-10v-6Z"
+                        fill="#FFD700"
+                      />
+                      <path
+                        d="M14 10h8v4a8 8 0 0 1-8 8H9a5 5 0 0 1-5-5V13a3 3 0 0 1 3-3h7Z"
+                        fill="#FFD700"
+                      />
+                      <path
+                        d="M50 10h-8v4a8 8 0 0 0 8 8h5a5 5 0 0 0 5-5V13a3 3 0 0 0-3-3h-7Z"
+                        fill="#FFD700"
+                      />
+                      <path
+                        d="M28 28h8v6a4 4 0 0 1-4 4 4 4 0 0 1-4-4v-6Z"
+                        fill="#E6C200"
+                      />
+                      <path
+                        d="M24 38h16v4H24zM22 44h20v4H22z"
+                        fill="#D4AF37"
+                      />
+                    </svg>
+                  </div>
+
+                  <!-- Center Trophy (bigger) -->
+                  <div
+                    class="flex flex-col items-center text-[0.7rem] text-[#FFD700]"
+                  >
+                    <svg
+                      class="h-14 w-14 drop-shadow-[0_0_18px_rgba(255,215,0,0.9)]"
+                      viewBox="0 0 64 64"
+                      fill="none"
+                    >
+                      <path
+                        d="M20 8h24v8a12 12 0 0 1-12 12 12 12 0 0 1-12-12V8Z"
+                        fill="#FFD700"
+                      />
+                      <path
+                        d="M14 10h8v5a9 9 0 0 1-9 9H9a5 5 0 0 1-5-5v-6a3 3 0 0 1 3-3h7Z"
+                        fill="#FFD700"
+                      />
+                      <path
+                        d="M50 10h-8v5a9 9 0 0 0 9 9h4a5 5 0 0 0 5-5v-6a3 3 0 0 0-3-3h-7Z"
+                        fill="#FFD700"
+                      />
+                      <path
+                        d="M28 30h8v7a4.5 4.5 0 0 1-4 4.5A4.5 4.5 0 0 1 28 37v-7Z"
+                        fill="#E6C200"
+                      />
+                      <path
+                        d="M23 40h18v4H23zM21 46h22v5H21z"
+                        fill="#D4AF37"
+                      />
+                    </svg>
+                  </div>
+
+                  <!-- Right Trophy -->
+                  <div
+                    class="flex flex-col items-center text-[0.7rem] text-[#FFD700]/80"
+                  >
+                    <svg
+                      class="h-10 w-10 drop-shadow-[0_0_14px_rgba(255,215,0,0.7)]"
+                      viewBox="0 0 64 64"
+                      fill="none"
+                    >
+                      <path
+                        d="M22 10h20v6a10 10 0 0 1-10 10 10 10 0 0 1-10-10v-6Z"
+                        fill="#FFD700"
+                      />
+                      <path
+                        d="M14 10h8v4a8 8 0 0 1-8 8H9a5 5 0 0 1-5-5V13a3 3 0 0 1 3-3h7Z"
+                        fill="#FFD700"
+                      />
+                      <path
+                        d="M50 10h-8v4a8 8 0 0 0 8 8h5a5 5 0 0 0 5-5V13a3 3 0 0 0-3-3h-7Z"
+                        fill="#FFD700"
+                      />
+                      <path
+                        d="M28 28h8v6a4 4 0 0 1-4 4 4 4 0 0 1-4-4v-6Z"
+                        fill="#E6C200"
+                      />
+                      <path
+                        d="M24 38h16v4H24zM22 44h20v4H22z"
+                        fill="#D4AF37"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              <p
+                class="mt-4 text-center text-xs sm:text-sm font-medium text-[#FFD700]"
+              >
+                1st Place &amp; 2x 2nd Place
+              </p>
+            </div>
+
+            <!-- Certifications -->
+            <div
+              class="bg-[#112240] border border-[#233554] rounded-2xl p-6 lg:p-7 shadow-lg flex flex-col min-h-[320px]"
+            >
+              <p
+                class="text-[0.7rem] font-semibold tracking-[0.3em] text-[#8892B0] uppercase mb-4"
+              >
+                Certifications
+              </p>
+              <div class="flex items-center justify-center gap-5 flex-1">
+                  <!-- Badge 1 -->
+                  <div class="flex flex-col items-center gap-0">
+                    <div class="cert-shield">
+                      <div class="cert-badge">
+                        <div class="cert-shield__middle">CERTIFIED</div>
+                      </div>
+                      <div class="cert-shield__bottom">
+                        <div class="cert-ribbon"></div>
+                        <div class="cert-ribbon"></div>
+                      </div>
+                      <div class="cert-label">DJANGO</div>
+                    </div>
+                  </div>
+
+                  <!-- Badge 2 (primary / emphasized) -->
+                  <div class="flex flex-col items-center gap-0">
+                    <div class="cert-shield cert-shield--primary">
+                      <div class="cert-badge">
+                        <div class="cert-shield__middle">CERTIFIED</div>
+                      </div>
+                      <div class="cert-shield__bottom">
+                        <div class="cert-ribbon"></div>
+                        <div class="cert-ribbon"></div>
+                      </div>
+                      <div class="cert-label">REACT</div>
+                    </div>
+                  </div>
+
+                  <!-- Badge 3 -->
+                  <div class="flex flex-col items-center gap-0">
+                    <div class="cert-shield">
+                      <div class="cert-badge">
+                        <div class="cert-shield__middle">CERTIFIED</div>
+                      </div>
+                      <div class="cert-shield__bottom">
+                        <div class="cert-ribbon"></div>
+                        <div class="cert-ribbon"></div>
+                      </div>
+                      <div class="cert-label">MONGO</div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+          </section>
+
+          <!-- ROW 2: PROJECTS -->
+          <section class="space-y-4">
+            <!-- Header -->
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="h-8 border-l-4 border-[#64FFDA] rounded-full"></div>
+                <div>
+                  <h3 class="text-sm sm:text-base font-semibold tracking-[0.32em] uppercase">
+                    My Projects
+                  </h3>
+                  <p class="text-xs text-[#8892B0]">
+                    Applied ML work spanning churn prediction, fraud detection &amp; autonomous AI agents.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Projects Grid -->
+            <div class="grid md:grid-cols-3 gap-5">
+              <!-- Project Card 1: Customer Churn Prediction -->
+              <article
+                class="group bg-[#112240] border border-[#233554] rounded-2xl p-4 flex flex-col gap-4 shadow-lg hover:-translate-y-1 hover:border-[#64FFDA] hover:shadow-[0_0_25px_rgba(100,255,218,0.35)] transition-transform duration-200"
+              >
+                <div
+                  class="relative aspect-video rounded-xl bg-[#0A192F] border border-[#233554] overflow-hidden"
+                >
+                  <img
+                    src="project-customer-churn.png"
+                    alt="Customer churn prediction project"
+                    class="h-full w-full object-cover group-hover:scale-105 transition-transform"
+                  />
+                </div>
+
+                <div class="space-y-1">
+                  <h4 class="text-sm font-semibold">Customer Churn Prediction</h4>
+                  <p class="text-xs text-[#8892B0] leading-relaxed">
+                    Predictive analytics model to identify at-risk customers and improve retention strategies.
+                  </p>
+                </div>
+              </article>
+
+              <!-- Project Card 2: Credit Card Fraud Detection -->
+              <article
+                class="group bg-[#112240] border border-[#233554] rounded-2xl p-4 flex flex-col gap-4 shadow-lg hover:-translate-y-1 hover:border-[#219EBC] hover:shadow-[0_0_25px_rgba(33,158,188,0.35)] transition-transform duration-200"
+              >
+                <div
+                  class="relative aspect-video rounded-xl bg-[#0A192F] border border-[#233554] overflow-hidden"
+                >
+                  <img
+                    src="project-credit-card-fraud.png"
+                    alt="Credit card fraud detection project"
+                    class="h-full w-full object-cover group-hover:scale-105 transition-transform"
+                  />
+                </div>
+
+                <div class="space-y-1">
+                  <h4 class="text-sm font-semibold">Credit Card Fraud Detection</h4>
+                  <p class="text-xs text-[#8892B0] leading-relaxed">
+                    Machine learning pipeline to detect anomalous transaction patterns and prevent financial fraud.
+                  </p>
+                </div>
+              </article>
+
+              <!-- Project Card 3: AI Autonomous Agents -->
+              <article
+                class="group bg-[#112240] border border-[#233554] rounded-2xl p-4 flex flex-col gap-4 shadow-lg hover:-translate-y-1 hover:border-[#FF595E] hover:shadow-[0_0_25px_rgba(255,89,94,0.35)] transition-transform duration-200"
+              >
+                <div
+                  class="relative aspect-video rounded-xl bg-[#0A192F] border border-[#233554] overflow-hidden"
+                >
+                  <img
+                    src="project-ai-assistant.jpeg"
+                    alt="AI autonomous agents project"
+                    class="h-full w-full object-cover group-hover:scale-105 transition-transform"
+                  />
+                </div>
+
+                <div class="space-y-1">
+                  <h4 class="text-sm font-semibold">AI Autonomous Agents</h4>
+                  <p class="text-xs text-[#8892B0] leading-relaxed">
+                    Development of intelligent, task-oriented AI agents capable of autonomous decision-making.
+                  </p>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <!-- ROW 3: SKILLS, EDUCATION, GITHUB -->
+          <section class="flex flex-col gap-6">
+            <!-- Skill Proficiency -->
+            <div
+              class="bg-[#112240] border border-[#233554] rounded-2xl p-5 shadow-lg flex flex-col gap-4 relative overflow-hidden w-full"
+            >
+              <p
+                class="text-[0.7rem] font-semibold tracking-[0.3em] text-[#8892B0] uppercase"
+              >
+                Skill Proficiency
+              </p>
+
+              <!-- Horizontal Bar Chart -->
+              <div class="relative flex-1 min-h-[280px]">
+                <!-- Background gradient arc (decorative) -->
+                <div
+                  class="absolute bottom-0 right-0 w-32 h-32 rounded-full bg-gradient-to-br from-[#219EBC]/10 to-transparent blur-2xl"
+                ></div>
+
+                <!-- Chart Container -->
+                <div class="relative space-y-5 mt-4">
+                  <!-- React / JS -->
+                  <div class="flex items-center">
+                    <div class="w-28 text-[0.7rem] text-[#CCD6F6] font-medium">
+                      React / JS
+                    </div>
+                    <div class="flex-1 relative flex items-center" style="margin-left: 0.5rem;">
+                      <div
+                        class="h-8 rounded bg-gradient-to-r from-[#64FFDA] to-[#219EBC] opacity-90"
+                        style="width: 95%;"
+                      ></div>
+                      <span
+                        class="ml-2 text-[0.7rem] text-[#CCD6F6] font-semibold whitespace-nowrap"
+                      >
+                        95
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Python -->
+                  <div class="flex items-center">
+                    <div class="w-28 text-[0.7rem] text-[#CCD6F6] font-medium">
+                      Python
+                    </div>
+                    <div class="flex-1 relative flex items-center" style="margin-left: 0.5rem;">
+                      <div
+                        class="h-8 rounded bg-gradient-to-r from-[#64FFDA] to-[#219EBC] opacity-90"
+                        style="width: 90%;"
+                      ></div>
+                      <span
+                        class="ml-2 text-[0.7rem] text-[#CCD6F6] font-semibold whitespace-nowrap"
+                      >
+                        90
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- AWS Services -->
+                  <div class="flex items-center">
+                    <div class="w-28 text-[0.7rem] text-[#CCD6F6] font-medium">
+                      AWS Services
+                    </div>
+                    <div class="flex-1 relative flex items-center" style="margin-left: 0.5rem;">
+                      <div
+                        class="h-8 rounded bg-gradient-to-r from-[#64FFDA] to-[#219EBC] opacity-90"
+                        style="width: 85%;"
+                      ></div>
+                      <span
+                        class="ml-2 text-[0.7rem] text-[#CCD6F6] font-semibold whitespace-nowrap"
+                      >
+                        85
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Django -->
+                  <div class="flex items-center">
+                    <div class="w-28 text-[0.7rem] text-[#CCD6F6] font-medium">
+                      Django
+                    </div>
+                    <div class="flex-1 relative flex items-center" style="margin-left: 0.5rem;">
+                      <div
+                        class="h-8 rounded bg-gradient-to-r from-[#64FFDA] to-[#219EBC] opacity-90"
+                        style="width: 80%;"
+                      ></div>
+                      <span
+                        class="ml-2 text-[0.7rem] text-[#CCD6F6] font-semibold whitespace-nowrap"
+                      >
+                        80
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Horizontal Axis Labels -->
+                <div class="mt-6 flex justify-between items-center" style="padding-left: calc(7rem + 0.5rem);">
+                  <span class="text-[0.6rem] text-[#8892B0]">0</span>
+                  <span class="text-[0.6rem] text-[#8892B0]">25</span>
+                  <span class="text-[0.6rem] text-[#8892B0]">50</span>
+                  <span class="text-[0.6rem] text-[#8892B0]">75</span>
+                  <span class="text-[0.6rem] text-[#8892B0]">100</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Education and GitHub Grid -->
+            <div class="grid lg:grid-cols-2 gap-6">
+            <!-- Education Timeline -->
+            <div
+              class="bg-[#112240] border border-[#233554] rounded-2xl p-5 shadow-lg flex flex-col gap-4"
+            >
+              <p
+                class="text-[0.7rem] font-semibold tracking-[0.3em] text-[#8892B0] uppercase"
+              >
+                Education Timeline
+              </p>
+
+              <div class="relative mt-4 px-2">
+                <!-- Connector line -->
+                <div
+                  class="absolute left-6 right-6 top-1/2 h-px bg-[#233554] -translate-y-1/2"
+                ></div>
+
+                <div class="flex justify-center items-center gap-4 md:gap-5 relative z-10 py-4">
+                  <!-- Node 1 (Secondary - lowest) -->
+                  <div class="flex flex-col items-center gap-2 mt-20 ml-4">
+                    <div
+                      class="h-9 w-9 rounded-full border border-[#233554] bg-[#0A192F] flex items-center justify-center overflow-hidden"
+                    >
+                      <img
+                        src="clock-icon.png"
+                        alt="Clock"
+                        class="h-full w-full object-cover rounded-full"
+                      />
+                    </div>
+                    <div class="text-center">
+                      <p class="text-[0.65rem] font-semibold uppercase tracking-wide">
+                        Secondary
+                      </p>
+                      <p class="text-[0.6rem] text-[#8892B0]">2016-18</p>
+                    </div>
+                  </div>
+
+                  <!-- Node 2 (Higher Sec. - a bit higher) -->
+                  <div class="flex flex-col items-center gap-2 mt-10">
+                    <div
+                      class="h-9 w-9 rounded-full border border-[#233554] bg-[#0A192F] flex items-center justify-center overflow-hidden"
+                    >
+                      <img
+                        src="clock-icon.png"
+                        alt="Clock"
+                        class="h-full w-full object-cover rounded-full"
+                      />
+                    </div>
+                    <div class="text-center">
+                      <p class="text-[0.65rem] font-semibold uppercase tracking-wide">
+                        Higher Sec.
+                      </p>
+                      <p class="text-[0.6rem] text-[#8892B0]">2018-20</p>
+                    </div>
+                  </div>
+
+                  <!-- Node 3 (B.Tech - higher) -->
+                  <div class="flex flex-col items-center gap-2 mt-2">
+                    <div
+                      class="h-9 w-9 rounded-full border border-[#233554] bg-[#0A192F] flex items-center justify-center overflow-hidden"
+                    >
+                      <img
+                        src="clock-icon.png"
+                        alt="Clock"
+                        class="h-full w-full object-cover rounded-full"
+                      />
+                    </div>
+                    <div class="text-center">
+                      <p class="text-[0.65rem] font-semibold uppercase tracking-wide">
+                        B.Tech CSE
+                      </p>
+                      <p class="text-[0.6rem] text-[#8892B0]">2020-24</p>
+                    </div>
+                  </div>
+
+                  <!-- Node 4 (highest - M.Tech, slightly higher than B.Tech) -->
+                  <div class="flex flex-col items-center gap-2 -mt-4 mr-4">
+                    <div
+                      class="h-9 w-9 rounded-full border-2 border-[#64FFDA] bg-[#0A192F] flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(100,255,218,0.7)]"
+                    >
+                      <img
+                        src="clock-icon.png"
+                        alt="Clock"
+                        class="h-full w-full object-cover rounded-full"
+                      />
+                    </div>
+                    <div class="text-center">
+                      <p
+                        class="text-[0.65rem] font-semibold uppercase tracking-wide text-[#64FFDA]"
+                      >
+                        M.Tech DS
+                      </p>
+                      <p class="text-[0.6rem] text-[#8892B0]">2025–Present</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- GitHub Activity -->
+            <div
+              class="bg-[#112240] border border-[#233554] rounded-2xl p-5 shadow-lg flex flex-col gap-4"
+            >
+              <p
+                class="text-[0.7rem] font-semibold tracking-[0.3em] text-[#8892B0] uppercase"
+              >
+                GitHub Activity
+              </p>
+
+              <div class="mt-2">
+                <svg
+                  viewBox="0 0 200 80"
+                  class="w-full h-32"
+                  aria-hidden="true"
+                >
+                  <defs>
+                    <linearGradient
+                      id="ghAreaGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="0%" stop-color="#219EBC" stop-opacity="0.6" />
+                      <stop offset="100%" stop-color="#219EBC" stop-opacity="0" />
+                    </linearGradient>
+                  </defs>
+
+                  <!-- Axes (subtle) -->
+                  <line
+                    x1="10"
+                    y1="70"
+                    x2="190"
+                    y2="70"
+                    stroke="#233554"
+                    stroke-width="1"
+                  />
+                  <line
+                    x1="10"
+                    y1="10"
+                    x2="10"
+                    y2="70"
+                    stroke="#233554"
+                    stroke-width="1"
+                  />
+
+                  <!-- Area under the line -->
+                  <path
+                    d="M10 60 L40 55 L70 40 L100 50 L130 30 L160 35 L190 20 L190 70 L10 70 Z"
+                    fill="url(#ghAreaGradient)"
+                  ></path>
+
+                  <!-- Line -->
+                  <path
+                    d="M10 60 L40 55 L70 40 L100 50 L130 30 L160 35 L190 20"
+                    fill="none"
+                    stroke="#219EBC"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+
+                  <!-- Data Points -->
+                  <g fill="#64FFDA">
+                    <circle cx="10" cy="60" r="2.8"></circle>
+                    <circle cx="40" cy="55" r="2.8"></circle>
+                    <circle cx="70" cy="40" r="3"></circle>
+                    <circle cx="100" cy="50" r="2.8"></circle>
+                    <circle cx="130" cy="30" r="3.2"></circle>
+                    <circle cx="160" cy="35" r="2.8"></circle>
+                    <circle cx="190" cy="20" r="3.4"></circle>
+                  </g>
+                </svg>
+
+                <!-- Month Labels -->
+                <div class="flex justify-between items-center mt-1" style="padding-left: calc(2.5% + 0.25rem); padding-right: calc(2.5% + 0.25rem);">
+                  <span class="text-[0.6rem] text-[#8892B0]">Jan</span>
+                  <span class="text-[0.6rem] text-[#8892B0]">Feb</span>
+                  <span class="text-[0.6rem] text-[#8892B0]">Mar</span>
+                  <span class="text-[0.6rem] text-[#8892B0]">Apr</span>
+                  <span class="text-[0.6rem] text-[#8892B0]">May</span>
+                  <span class="text-[0.6rem] text-[#8892B0]">Jun</span>
+                  <span class="text-[0.6rem] text-[#8892B0]">Jul</span>
+                </div>
+
+                <p class="mt-2 text-[0.7rem] text-[#8892B0]">
+                  Abstracted contribution trend over recent months – highlighting
+                  consistency and peaks in feature development.
+                </p>
+              </div>
+            </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
